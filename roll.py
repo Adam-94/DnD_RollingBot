@@ -16,7 +16,7 @@ async def on_ready():
 
 def random_dice(die_amount, die):
     get_roll = [random.randint(1, die) for _ in range(die_amount)]
-    print(get_roll)
+    print(len(get_roll))
 
     total_roll = 0
     for i in range(len(get_roll)):
@@ -25,33 +25,41 @@ def random_dice(die_amount, die):
 
     return total_roll
 
+def get_dice_info(dice_amount = [], die = []):
+    dice_amount = int("".join(dice_amount))
+    die = int("".join(die))
+
+    return dice_amount, die
+
 @client.command()
 async def roll(ctx, user_post):
-    die = 0
-    die_amount = 0
     get_roll = 0
-    user_request = []
-
-    # Take characters from the command
-    for char in user_post:
-        user_request.append(char)
-
-    # Create a new list with only the integers e.g 1d4 = [1, 4]
-    new_list = [num for num in user_request if num.isdigit()]
+    n_die = 0
+    n_die_amount= 0 
+    die_amount = []
+    die = []
     
-    if len(new_list) > 3:
-        die_amount = int(str(new_list[0]) + str(new_list[1]))
-        die = int(str(new_list[2] + str(new_list[3])))
 
-    elif len(new_list) > 2:
-        die_amount = int(str(new_list[0]))
-        die = int(str(new_list[1] + str(new_list[2])))
-    else:
-        die_amount = int(str(new_list[0]))
-        die = int(str(new_list[1]))
+    user_request = [char for char in user_post]
+    command_index = user_request.index('d')
+    print(command_index, '\n')
+
+    for index in range(0, command_index):
+        die_amount.append(user_request[index])
+
+    for index in range(command_index+1, len(user_request)):
+        die.append(user_request[index])
+
+    n_die_amount, n_die = get_dice_info(die_amount, die)
+    print("Die amount: ", n_die_amount, "\nDie: ", n_die)
         
-    get_roll = random_dice(die_amount, die)
-    await ctx.send(f'Rolling {die_amount}d{die}\nYou rolled: {get_roll}')
+    if n_die_amount < 100:
+        get_roll = random_dice(n_die_amount, n_die)
 
+    if n_die == 20 and get_roll == 20: get_roll = str("Natural 20!")
+    if n_die == 20 and get_roll == 1: get_roll = str("Critical 1!")
+    
+    if n_die_amount > 99: await ctx.send("My dice bag isn't that big :(")
+    else: await ctx.send(f'Rolling {n_die_amount}d{n_die}\nYou rolled: {get_roll}')
 
 client.run(TOKEN)
